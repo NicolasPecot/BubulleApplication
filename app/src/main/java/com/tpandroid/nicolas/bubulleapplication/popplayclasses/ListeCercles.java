@@ -8,6 +8,7 @@ import java.util.LinkedList;
 public class ListeCercles {
 
     public LinkedList<Cercle> liste = new LinkedList<Cercle>();
+    public int xMax, yMax;
     private static final ListeCercles listeCercles = new ListeCercles();
     private ListeCercles(){}
 

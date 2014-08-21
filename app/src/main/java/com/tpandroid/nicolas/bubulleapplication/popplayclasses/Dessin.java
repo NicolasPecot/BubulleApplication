@@ -15,22 +15,32 @@ import java.util.Random;
  */
 public class Dessin extends View implements View.OnTouchListener {
 
+    private static int RAYON_MAX = 40;
+    private static int RAYON_MIN = 25;
     private Dessin moi = this;
     private Handler handler;
     private Random random = new Random();
     private int comptePoints = 0;
 
+    private int xMax = 300;
+    private int yMax = 300;
+
     public Dessin(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOnTouchListener(this);
+        Log.i("skdjfhks", "lsuhkfjd");
         handler = new Handler();
         Cercle cercle = new Cercle(140, 130, 30);
         ListeCercles.getInstance().liste.add(cercle);
+        xMax = ListeCercles.getInstance().xMax;
+        yMax = ListeCercles.getInstance().yMax;
+        int i = 1;
         runAddCercles.run();
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        Log.i("touché", "coulé");
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             int x = (int) event.getX();
             int y = (int) event.getY();
@@ -74,10 +84,12 @@ public class Dessin extends View implements View.OnTouchListener {
         @Override
         public void run() {
             if (ListeCercles.getInstance().liste.size() <= 10) {
-                int x = random.nextInt(300);
-                int y = random.nextInt(300) + 30;
-                int rayon = random.nextInt(40);
-                Cercle cercle = new Cercle(x, y, (rayon < 25 ? 25 : rayon));
+
+                int x = random.nextInt(xMax) + RAYON_MAX;
+                int y = random.nextInt(yMax) + RAYON_MAX;
+                int rayon = random.nextInt(RAYON_MAX);
+                Cercle cercle = new Cercle((x > xMax ? xMax : x), (y > yMax ? yMax : y),
+                        (rayon < RAYON_MIN ? RAYON_MIN : rayon));
                 ListeCercles.getInstance().liste.add(cercle);
             }
             //if (comptePoints <= 20) {
