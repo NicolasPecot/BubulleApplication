@@ -32,9 +32,8 @@ public class Dessin extends View implements View.OnTouchListener {
         handler = new Handler();
         Cercle cercle = new Cercle(140, 130, 30);
         ListeCercles.getInstance().liste.add(cercle);
-        xMax = ListeCercles.getInstance().xMax;
-        yMax = ListeCercles.getInstance().yMax;
-        int i = 1;
+        xMax = ListeCercles.getInstance().xMax - RAYON_MAX;
+        yMax = ListeCercles.getInstance().yMax - RAYON_MAX;
         runAddCercles.run();
     }
 
