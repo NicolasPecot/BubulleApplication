@@ -28,18 +28,31 @@ public class Dessin extends View implements View.OnTouchListener {
     public Dessin(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOnTouchListener(this);
-        Log.i("skdjfhks", "lsuhkfjd");
+
         handler = new Handler();
-        Cercle cercle = new Cercle(140, 130, 30);
-        ListeCercles.getInstance().liste.add(cercle);
+//        Cercle cercle = new Cercle(140, 130, 30);
+//        ListeCercles.getInstance().liste.add(cercle);
+
+        // Récupération des dimensions de l'écran (avec une marge)
         xMax = ListeCercles.getInstance().xMax - RAYON_MAX;
         yMax = ListeCercles.getInstance().yMax - RAYON_MAX;
+
+        // lancement de la génération des cercles
         runAddCercles.run();
     }
 
+    /**
+     * Methode permettant de faire despawn un cercle quand on le touche.
+     *
+     * Quand on touche l'écran, la méthode parcours la liste des cercles créés afin de voir si
+     * le contact a été fait dans un cercle. Si c'est le cas, on le supprime de la liste.
+     * @param v
+     * @param event
+     * @return
+     */
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        Log.i("touché", "coulé");
+
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             int x = (int) event.getX();
             int y = (int) event.getY();
@@ -51,7 +64,6 @@ public class Dessin extends View implements View.OnTouchListener {
                         y < cercle.yc + cercle.rayon &&
                         y > cercle.yc - cercle.rayon) {
                     cercleavirer = cercle;
-                    Log.i("cercle touché", "kjdsnfshgbdf");
                 }
             }
             if (cercleavirer != null) {
@@ -72,6 +84,10 @@ public class Dessin extends View implements View.OnTouchListener {
         return true;
     }
 
+    /**
+     * Affichage des cercles créés dans la liste
+     * @param canvas
+     */
     @Override
     protected void onDraw(Canvas canvas) {
         for (Cercle cercle : ListeCercles.getInstance().liste) {
@@ -79,6 +95,14 @@ public class Dessin extends View implements View.OnTouchListener {
         }
     }
 
+    /**
+     * Processus de création continue des cercles.
+     *
+     * Tant que la liste contient moins de 10 cercles, le thread se charge d'en créer un et de l'ajouter
+     * à la liste. Les coordonnées et le rayon du cercle sont aléatoires (compris dans une fourchette).
+     * Une fois le cercle créé (ou pas selon la taille de la liste), on attend un temps aléatoire avant
+     * de relancer l'opération (entre 250 et 1000 ms)
+     */
     public Runnable runAddCercles = new Runnable() {
         @Override
         public void run() {

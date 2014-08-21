@@ -3,6 +3,7 @@ package com.tpandroid.nicolas.bubulleapplication.popplayclasses;
 /**
  * Created by nicolas on 21/08/14.
  */
+@Deprecated
 public class ThreadAjoutCercles implements Runnable {
 
     @Override
