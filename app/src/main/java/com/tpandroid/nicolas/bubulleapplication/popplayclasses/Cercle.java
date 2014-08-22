@@ -10,10 +10,11 @@ import android.util.Log;
  * Created by nicolas on 21/08/14.
  */
 public class Cercle {
+
     int xc, yc, rayon;
     private Cercle c = this;
     public Handler h;
-    //public Dessin d;
+
     public Thread t;
     private Paint paint;
 
@@ -38,10 +39,8 @@ public class Cercle {
         @Override
         public void run() {
             rayon -= 1;
-            //Log.i("Thread Cercle", "taille rayon : " + String.valueOf(rayon));
-            if (rayon <= 5) {
-                Dessin.listeCercles.remove(c);
-                Utilitaire.getInstance().cerclesPerdus++;
+            if (rayon == 10) {
+                t.interrupt();
                 Log.i("cercles perdus", String.valueOf(Utilitaire.getInstance().cerclesPerdus));
             } else {
                 h.postDelayed(this, 60);

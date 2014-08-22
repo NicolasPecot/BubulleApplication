@@ -22,6 +22,7 @@ public class Dessin extends View implements View.OnTouchListener {
     public static final int TIMER_MIN = 500;
     public static final int TIMER_MAX = 1000;
     public static final int NB_MAX_CERCLES = 20;
+    public int difficulty = 0;
     public Thread t;
     public static LinkedList<Cercle> listeCercles;
     public Dessin moi = this;
@@ -45,10 +46,10 @@ public class Dessin extends View implements View.OnTouchListener {
 
         // lancement de la génération des cercles
         t = new Thread(runAddCercles);
-        //t.start();
         t.run();
 
         affichage.run();
+        difficultyOverTime.run();
     }
 
     /**
@@ -73,8 +74,6 @@ public class Dessin extends View implements View.OnTouchListener {
                         x > cercle.xc - cercle.rayon &&
                         y < cercle.yc + cercle.rayon &&
                         y > cercle.yc - cercle.rayon) {
-                    Log.i("cercle courant", cercle.toString());
-                    Log.i("cercle courant", String.valueOf(cercle.t.isAlive()));
                     cercle.t.interrupt();
                     cercleavirer = cercle;
                 }
@@ -113,6 +112,20 @@ public class Dessin extends View implements View.OnTouchListener {
         @Override
         public void run() {
 
+            // Parcours de la liste de cercles afin d'identifier ceux ayant été trop réduits en rayon
+            // et de les supprimer. Le compteur cerclesPerdus est incrémenté dans ce cas.
+            Cercle cc = null;
+            for (Cercle c : listeCercles) {
+                if (c.rayon == 10) {
+                    c.t.interrupt();
+                    cc = c;
+                    Utilitaire.getInstance().cerclesPerdus++;
+                }
+            }
+            if (cc != null) {
+                listeCercles.remove(cc);
+            }
+
             if (listeCercles.size() <= NB_MAX_CERCLES) {
 
                 int x = random.nextInt(xMax) + RAYON_MAX;
@@ -135,16 +148,18 @@ public class Dessin extends View implements View.OnTouchListener {
                     }
                 }
 
+                // Création et ajout du nouveau cercle
                 Cercle cercle = new Cercle((x > xMax ? xMax : x), (y > yMax ? yMax : y),
                         (rayon < RAYON_MIN ? RAYON_MIN : rayon));
                 listeCercles.add(cercle);
 
+                // Si on a loupé trop de cercles, on perd : interruption du thread de spawn et popup
                 if (Utilitaire.getInstance().cerclesPerdus == 5) {
                     Toast.makeText(getContext(), "Perdu ! \n " + String.valueOf(comptePoints) + " Points", Toast.LENGTH_SHORT).show();
                     t.interrupt();
                 } else {
-                    int i = random.nextInt(TIMER_MAX);
-                    handler.postDelayed(runAddCercles, (i > TIMER_MIN ? i : TIMER_MIN));
+                    int i = random.nextInt(TIMER_MAX - difficulty);
+                    handler.postDelayed(runAddCercles, (i > TIMER_MIN-difficulty ? i : TIMER_MIN-difficulty));
                 }
             } else {
                 Toast.makeText(getContext(), "Perdu ! \n " + String.valueOf(comptePoints) + " Points", Toast.LENGTH_SHORT).show();
@@ -154,11 +169,31 @@ public class Dessin extends View implements View.OnTouchListener {
         }
     };
 
+    /**
+     * Parcours continu de la liste des cercles afin de pouvoir avoir une animation fluide
+     * pour la réduction des rayons des cercles.
+     */
     public Runnable affichage = new Runnable() {
         @Override
         public void run() {
             moi.invalidate();
             handler.postDelayed(affichage, 60);
+        }
+    };
+
+    /**
+     * Augmentation de la difficulté, donc de la vitesse d'apparition de cercles
+     * avec le temps. -1ms toutes les secondes jusqu'a un plafond de 200ms.
+     */
+    public Runnable difficultyOverTime = new Runnable() {
+        @Override
+        public void run() {
+            if (difficulty < 200) {
+                difficulty++;
+                handler.postDelayed(difficultyOverTime, 1000);
+            } else {
+                Log.i("Difficulté Max", "atteinte");
+            }
         }
     };
 
