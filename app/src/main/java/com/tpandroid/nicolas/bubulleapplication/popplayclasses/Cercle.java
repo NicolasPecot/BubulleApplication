@@ -28,13 +28,28 @@ public class Cercle {
         t = new Thread(reductionCercle);
         t.start();
     }
+
+    /**
+     * Methode permettant de vérifier si les coordinnées passées en parametre sont dans le cercle courant
+     * @param x abscisse vérifiée
+     * @param y ordonnée vérifiée
+     * @return true si on est dedans, false sinon
+     */
     public boolean contains(int x, int y) {
         return (x - xc)*(x - xc) + (y - yc)*(y - yc) <= (2*rayon*rayon);
     }
+
+    /**
+     * Methode permettant de dessiner le cercle sur le canvas passé en paramètre
+     * @param canvas zone de dessin
+     */
     public void draw(Canvas canvas) {
         canvas.drawCircle(xc, yc, rayon, paint);
     }
 
+    /**
+     * Thread de réduction progressive du rayon du cercle courant
+     */
     public Runnable reductionCercle = new Runnable() {
         @Override
         public void run() {

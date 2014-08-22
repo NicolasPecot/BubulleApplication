@@ -30,7 +30,9 @@ public class PopPlayActivity extends Activity {
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         Utilitaire.getInstance().xMax = dm.widthPixels;
         Utilitaire.getInstance().yMax = dm.heightPixels;
+
         Utilitaire.getInstance().cerclesPerdus = 0;
+
         setContentView(R.layout.activity_pop_play);
     }
 
