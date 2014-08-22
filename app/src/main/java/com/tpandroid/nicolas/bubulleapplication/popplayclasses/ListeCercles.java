@@ -9,7 +9,8 @@ public class ListeCercles {
 
     // Liste contenant les cercles
     public LinkedList<Cercle> liste = new LinkedList<Cercle>();
-    // Astuce pour transmettre les dimensions du layout à Dessin (qui contient le View à afficher)
+
+    // Astuce pour transmettre les dimensions du layout à Dessin (qui est le View à afficher)
     public int xMax, yMax;
 
     // Pattern singleton pour "stocker" la liste

@@ -16,7 +16,10 @@ public class Cercle {
         yc = y;
         rayon = r;
         paint = new Paint();
-        paint.setColor(Color.rgb((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256)));
+        paint.setColor(Color.rgb(50, 50, 50));
+    }
+    public boolean contains(int x, int y) {
+        return (x - xc)*(x - xc) + (y - yc)*(y - yc) <= (rayon*rayon);
     }
     public void draw(Canvas canvas)
     {

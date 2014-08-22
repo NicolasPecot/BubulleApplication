@@ -15,7 +15,7 @@ import java.util.Random;
  */
 public class Dessin extends View implements View.OnTouchListener {
 
-    private static int RAYON_MAX = 40;
+    private static int RAYON_MAX = 50;
     private static int RAYON_MIN = 25;
     private Dessin moi = this;
     private Handler handler;
@@ -35,7 +35,7 @@ public class Dessin extends View implements View.OnTouchListener {
 
         // Récupération des dimensions de l'écran (avec une marge)
         xMax = ListeCercles.getInstance().xMax - RAYON_MAX;
-        yMax = ListeCercles.getInstance().yMax - RAYON_MAX;
+        yMax = ListeCercles.getInstance().yMax - 2 * RAYON_MAX;
 
         // lancement de la génération des cercles
         runAddCercles.run();
@@ -43,12 +43,13 @@ public class Dessin extends View implements View.OnTouchListener {
 
     /**
      * Methode permettant de faire despawn un cercle quand on le touche.
-     *
+     * <p/>
      * Quand on touche l'écran, la méthode parcours la liste des cercles créés afin de voir si
      * le contact a été fait dans un cercle. Si c'est le cas, on le supprime de la liste.
-     * @param v
-     * @param event
-     * @return
+     *
+     * @param v     vue oùa lieu l'event onTouch
+     * @param event type d'event onTouch
+     * @return boolean
      */
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -71,14 +72,6 @@ public class Dessin extends View implements View.OnTouchListener {
                 comptePoints++;
                 Log.i("compteur points", String.valueOf(comptePoints));
             }
-            /*if (ListeCercles.getInstance().liste.size() == 0) {
-                double nb = ((Math.random()) * 10) + 1;
-                Log.i("nb généré", String.valueOf(nb));
-                for (int i = 0; i < (int) nb; i++) {
-                    Cercle cercle = new Cercle((int) (Math.random() * 230) + 30, (int) (Math.random() * 230) + 60, (int) (Math.random() * 40) + 10);
-                    ListeCercles.getInstance().liste.add(cercle);
-                }
-            }*/
         }
         this.invalidate();
         return true;
@@ -86,7 +79,8 @@ public class Dessin extends View implements View.OnTouchListener {
 
     /**
      * Affichage des cercles créés dans la liste
-     * @param canvas
+     *
+     * @param canvas zone de dessin
      */
     @Override
     protected void onDraw(Canvas canvas) {
@@ -97,7 +91,7 @@ public class Dessin extends View implements View.OnTouchListener {
 
     /**
      * Processus de création continue des cercles.
-     *
+     * <p/>
      * Tant que la liste contient moins de 10 cercles, le thread se charge d'en créer un et de l'ajouter
      * à la liste. Les coordonnées et le rayon du cercle sont aléatoires (compris dans une fourchette).
      * Une fois le cercle créé (ou pas selon la taille de la liste), on attend un temps aléatoire avant
@@ -108,16 +102,28 @@ public class Dessin extends View implements View.OnTouchListener {
         public void run() {
             if (ListeCercles.getInstance().liste.size() <= 10) {
 
-                int x = random.nextInt(xMax) + RAYON_MAX;
-                int y = random.nextInt(yMax) + RAYON_MAX;
+                int x = 0;
+                int y = 0;
                 int rayon = random.nextInt(RAYON_MAX);
+
+                // Moyen pour que les cercles générés ne se superposent pas
+                boolean coordOK = false;
+                if (ListeCercles.getInstance().liste.size() !=0){
+                    while (!coordOK) {
+                        x = random.nextInt(xMax) + RAYON_MAX;
+                        y = random.nextInt(yMax) + RAYON_MAX;
+                        for (Cercle c : ListeCercles.getInstance().liste) {
+                            coordOK = !c.contains(x, y);
+                        }
+                    }
+                }
+
                 Cercle cercle = new Cercle((x > xMax ? xMax : x), (y > yMax ? yMax : y),
                         (rayon < RAYON_MIN ? RAYON_MIN : rayon));
                 ListeCercles.getInstance().liste.add(cercle);
             }
             //if (comptePoints <= 20) {
             int i = random.nextInt(1000);
-            Log.i("delai", String.valueOf(i));
             handler.postDelayed(runAddCercles, (i > 250 ? i : 250));
             //}
             moi.invalidate();
