@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 
-import com.tpandroid.nicolas.bubulleapplication.popplayclasses.ListeCercles;
+import com.tpandroid.nicolas.bubulleapplication.popplayclasses.Utilitaire;
 import com.tpandroid.nicolas.bubulleapplication.util.SystemUiHider;
 
 
@@ -28,9 +28,9 @@ public class PopPlayActivity extends Activity {
         // Récupération et stockage des dimensions de l'écran afin d'avoir un affichage sur toute la surface
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
-        ListeCercles.getInstance().xMax = dm.widthPixels;
-        ListeCercles.getInstance().yMax = dm.heightPixels;
-
+        Utilitaire.getInstance().xMax = dm.widthPixels;
+        Utilitaire.getInstance().yMax = dm.heightPixels;
+        Utilitaire.getInstance().cerclesPerdus = 0;
         setContentView(R.layout.activity_pop_play);
     }
 

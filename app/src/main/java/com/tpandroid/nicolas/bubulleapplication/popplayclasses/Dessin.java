@@ -17,11 +17,14 @@ import java.util.Random;
  */
 public class Dessin extends View implements View.OnTouchListener {
 
-    private static int RAYON_MAX = 50;
-    private static int RAYON_MIN = 25;
-    private Dessin moi = this;
+    public static final int RAYON_MAX = 55;
+    public static final int RAYON_MIN = 55;
+    public static final int TIMER_MIN = 500;
+    public static final int TIMER_MAX = 1000;
+    public static final int NB_MAX_CERCLES = 20;
     public Thread t;
-    public LinkedList<Cercle> listeCercles;
+    public static LinkedList<Cercle> listeCercles;
+    public Dessin moi = this;
     private Handler handler;
     private Random random = new Random();
     private int comptePoints = 0;
@@ -34,14 +37,18 @@ public class Dessin extends View implements View.OnTouchListener {
         setOnTouchListener(this);
 
         // Récupération des dimensions de l'écran (avec une marge)
-        xMax = ListeCercles.getInstance().xMax - RAYON_MAX;
-        yMax = ListeCercles.getInstance().yMax - 2 * RAYON_MAX;
+        xMax = Utilitaire.getInstance().xMax - RAYON_MAX;
+        yMax = Utilitaire.getInstance().yMax - 2 * RAYON_MAX;
 
         listeCercles = new LinkedList<Cercle>();
+        handler = new Handler();
 
         // lancement de la génération des cercles
-        t=new Thread(runAddCercles);
+        t = new Thread(runAddCercles);
+        //t.start();
         t.run();
+
+        affichage.run();
     }
 
     /**
@@ -60,20 +67,22 @@ public class Dessin extends View implements View.OnTouchListener {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             int x = (int) event.getX();
             int y = (int) event.getY();
-            Log.i("taille liste", String.valueOf(listeCercles.size()));
             Cercle cercleavirer = null;
             for (Cercle cercle : listeCercles) {
                 if ((x < cercle.xc + cercle.rayon) &&
                         x > cercle.xc - cercle.rayon &&
                         y < cercle.yc + cercle.rayon &&
                         y > cercle.yc - cercle.rayon) {
+                    Log.i("cercle courant", cercle.toString());
+                    Log.i("cercle courant", String.valueOf(cercle.t.isAlive()));
+                    cercle.t.interrupt();
                     cercleavirer = cercle;
                 }
             }
             if (cercleavirer != null) {
+                //cercleavirer.t.interrupt();
                 listeCercles.remove(cercleavirer);
                 comptePoints++;
-                Log.i("compteur points", String.valueOf(comptePoints));
             }
         }
         this.invalidate();
@@ -103,37 +112,53 @@ public class Dessin extends View implements View.OnTouchListener {
     public Runnable runAddCercles = new Runnable() {
         @Override
         public void run() {
-            if (listeCercles.size() <= 10) {
 
-                int x = 0;
-                int y = 0;
+            if (listeCercles.size() <= NB_MAX_CERCLES) {
+
+                int x = random.nextInt(xMax) + RAYON_MAX;
+                int y = random.nextInt(yMax) + RAYON_MAX;
                 int rayon = random.nextInt(RAYON_MAX);
 
-                // Moyen pour que les cercles générés ne se superposent pas
+                // Moyen pour que les cercles générés ne se superposent pas (trop)
                 boolean coordOK = false;
-                if (listeCercles.size() !=0){
+                if (listeCercles.size() != 0) {
                     while (!coordOK) {
                         x = random.nextInt(xMax) + RAYON_MAX;
                         y = random.nextInt(yMax) + RAYON_MAX;
-                        for (Cercle c : ListeCercles.getInstance().liste) {
+                        coordOK = true;
+                        for (Cercle c : listeCercles) {
                             coordOK = !c.contains(x, y);
+                            if (!coordOK){
+                                break;
+                            }
                         }
                     }
                 }
 
                 Cercle cercle = new Cercle((x > xMax ? xMax : x), (y > yMax ? yMax : y),
                         (rayon < RAYON_MIN ? RAYON_MIN : rayon));
-                ListeCercles.getInstance().liste.add(cercle);
-                int i = random.nextInt(1000);
-                handler.postDelayed(runAddCercles, (i > 250 ? i : 250));
-            }
-            else {
-                Toast.makeText(getContext(), "Perdu ! \n "+String.valueOf(comptePoints)+" Points", Toast.LENGTH_SHORT).show();
+                listeCercles.add(cercle);
+
+                if (Utilitaire.getInstance().cerclesPerdus == 5) {
+                    Toast.makeText(getContext(), "Perdu ! \n " + String.valueOf(comptePoints) + " Points", Toast.LENGTH_SHORT).show();
+                    t.interrupt();
+                } else {
+                    int i = random.nextInt(TIMER_MAX);
+                    handler.postDelayed(runAddCercles, (i > TIMER_MIN ? i : TIMER_MIN));
+                }
+            } else {
+                Toast.makeText(getContext(), "Perdu ! \n " + String.valueOf(comptePoints) + " Points", Toast.LENGTH_SHORT).show();
                 t.interrupt();
             }
-            //}
             moi.invalidate();
+        }
+    };
 
+    public Runnable affichage = new Runnable() {
+        @Override
+        public void run() {
+            moi.invalidate();
+            handler.postDelayed(affichage, 60);
         }
     };
 
