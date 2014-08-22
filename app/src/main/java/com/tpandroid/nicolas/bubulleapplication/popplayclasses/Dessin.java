@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.Random;
@@ -127,7 +128,7 @@ public class Dessin extends View implements View.OnTouchListener {
                 handler.postDelayed(runAddCercles, (i > 250 ? i : 250));
             }
             else {
-                //Toast.makeText()
+                Toast.makeText(getContext(), "Perdu ! \n "+String.valueOf(comptePoints)+" Points", Toast.LENGTH_SHORT).show();
                 t.interrupt();
             }
             //}
