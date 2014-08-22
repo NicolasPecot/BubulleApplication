@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.LinkedList;
 import java.util.Random;
 
 /**
@@ -18,6 +19,8 @@ public class Dessin extends View implements View.OnTouchListener {
     private static int RAYON_MAX = 50;
     private static int RAYON_MIN = 25;
     private Dessin moi = this;
+    public Thread t;
+    public LinkedList<Cercle> listeCercles;
     private Handler handler;
     private Random random = new Random();
     private int comptePoints = 0;
@@ -29,16 +32,15 @@ public class Dessin extends View implements View.OnTouchListener {
         super(context, attrs);
         setOnTouchListener(this);
 
-        handler = new Handler();
-//        Cercle cercle = new Cercle(140, 130, 30);
-//        ListeCercles.getInstance().liste.add(cercle);
-
         // Récupération des dimensions de l'écran (avec une marge)
         xMax = ListeCercles.getInstance().xMax - RAYON_MAX;
         yMax = ListeCercles.getInstance().yMax - 2 * RAYON_MAX;
 
+        listeCercles = new LinkedList<Cercle>();
+
         // lancement de la génération des cercles
-        runAddCercles.run();
+        t=new Thread(runAddCercles);
+        t.run();
     }
 
     /**
@@ -57,9 +59,9 @@ public class Dessin extends View implements View.OnTouchListener {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             int x = (int) event.getX();
             int y = (int) event.getY();
-            Log.i("taille liste", String.valueOf(ListeCercles.getInstance().liste.size()));
+            Log.i("taille liste", String.valueOf(listeCercles.size()));
             Cercle cercleavirer = null;
-            for (Cercle cercle : ListeCercles.getInstance().liste) {
+            for (Cercle cercle : listeCercles) {
                 if ((x < cercle.xc + cercle.rayon) &&
                         x > cercle.xc - cercle.rayon &&
                         y < cercle.yc + cercle.rayon &&
@@ -68,7 +70,7 @@ public class Dessin extends View implements View.OnTouchListener {
                 }
             }
             if (cercleavirer != null) {
-                ListeCercles.getInstance().liste.remove(cercleavirer);
+                listeCercles.remove(cercleavirer);
                 comptePoints++;
                 Log.i("compteur points", String.valueOf(comptePoints));
             }
@@ -84,7 +86,7 @@ public class Dessin extends View implements View.OnTouchListener {
      */
     @Override
     protected void onDraw(Canvas canvas) {
-        for (Cercle cercle : ListeCercles.getInstance().liste) {
+        for (Cercle cercle : listeCercles) {
             cercle.draw(canvas);
         }
     }
@@ -100,7 +102,7 @@ public class Dessin extends View implements View.OnTouchListener {
     public Runnable runAddCercles = new Runnable() {
         @Override
         public void run() {
-            if (ListeCercles.getInstance().liste.size() <= 10) {
+            if (listeCercles.size() <= 10) {
 
                 int x = 0;
                 int y = 0;
@@ -108,7 +110,7 @@ public class Dessin extends View implements View.OnTouchListener {
 
                 // Moyen pour que les cercles générés ne se superposent pas
                 boolean coordOK = false;
-                if (ListeCercles.getInstance().liste.size() !=0){
+                if (listeCercles.size() !=0){
                     while (!coordOK) {
                         x = random.nextInt(xMax) + RAYON_MAX;
                         y = random.nextInt(yMax) + RAYON_MAX;
@@ -121,14 +123,17 @@ public class Dessin extends View implements View.OnTouchListener {
                 Cercle cercle = new Cercle((x > xMax ? xMax : x), (y > yMax ? yMax : y),
                         (rayon < RAYON_MIN ? RAYON_MIN : rayon));
                 ListeCercles.getInstance().liste.add(cercle);
+                int i = random.nextInt(1000);
+                handler.postDelayed(runAddCercles, (i > 250 ? i : 250));
             }
-            //if (comptePoints <= 20) {
-            int i = random.nextInt(1000);
-            handler.postDelayed(runAddCercles, (i > 250 ? i : 250));
+            else {
+                //Toast.makeText()
+                t.interrupt();
+            }
             //}
             moi.invalidate();
+
         }
     };
-
 
 }
